@@ -5,13 +5,14 @@ class Driver_Arduino extends Dobby_Driver {
 
     public function getValue($address) {
 
-        $address = $this->parseAddress($address);
+        $addr = $this->parseAddress($address);
         $value = null;
-        if ($address[0] == 'http') {
-
-            $url = 'http://' . $address[1] . '/get' . ucfirst($address[2]);
+        if ($addr[0] == 'http') {
+            if (!isset($addr[2])){
+                Kohana::$log->add(LOG::ERROR, 'UNKNOWN ADDRESS "'.$address.'"');
+            }
+            $url = 'http://' . $addr[1] . '/get' . ucfirst($addr[2]);
             $ch = curl_init();
-
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_TIMEOUT, $this->_timeout);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -24,6 +25,8 @@ class Driver_Arduino extends Dobby_Driver {
                 throw new Exception($error);
             }
             curl_close($ch);
+        } else {
+            Kohana::$log->add(LOG::ERROR, 'UNKNOWN ADDRESS "'.$address.'"');
         }
         return $value;
     }
@@ -31,10 +34,14 @@ class Driver_Arduino extends Dobby_Driver {
 
     public function setValue($address, $value) {
 
-        $address = $this->parseAddress($address);
-        if ($address[0] == 'http') {
+        $addr = $this->parseAddress($address);
+        if ($addr[0] == 'http') {
+            if (!isset($addr[2])){
+                Kohana::$log->add(LOG::ERROR, 'UNKNOWN ADDRESS "'.$address.'"');
+            }
+            $url = 'http://' . $addr[1] . '/set' . ucfirst($addr[2]) . ':' . $value;
+            var_dump($url);
 
-            $url = 'http://' . $address[1] . '/set' . ucfirst($address[2]) . ':' . $value;
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_TIMEOUT, $this->_timeout);
@@ -48,6 +55,8 @@ class Driver_Arduino extends Dobby_Driver {
                 throw new Exception($error);
             }
             curl_close($ch);
+        } else {
+            Kohana::$log->add(LOG::ERROR, 'UNKNOWN ADDRESS "'.$address.'"');
         }
     }
 }
